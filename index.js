@@ -34,25 +34,6 @@ const toggleSave    = document.getElementById('toggleSave');
 const priceValues   = document.querySelectorAll('.pricing-value[data-monthly]');
 const billedTexts   = document.querySelectorAll('.pricing-billed[data-monthly]');
 
-function setPlan(plan) {
-    priceValues.forEach(el => {
-        el.textContent = el.dataset[plan];
-    });
-    billedTexts.forEach(el => {
-        el.textContent = el.dataset[plan];
-        el.classList.toggle('yearly-active', plan === 'yearly');
-    });
-
-    if (plan === 'yearly') {
-        toggleYearly.classList.add('active');
-        toggleMonthly.classList.remove('active');
-        toggleSave.classList.add('visible');
-    } else {
-        toggleMonthly.classList.add('active');
-        toggleYearly.classList.remove('active');
-        toggleSave.classList.remove('visible');
-    }
-}
 /* ===== Payments (Backend Call) ===== */
 
 async function startCheckout(plan) {
