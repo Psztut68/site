@@ -1,122 +1,42 @@
-/*
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
-TemplateMo 618 The Catalyst
+/* 🔐 Firebase config (NOT secret, normal frontend config) */
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_AUTH",
+  projectId: "YOUR_PROJECT",
+  storageBucket: "YOUR_BUCKET",
+  appId: "YOUR_APP_ID"
+};
 
-https://templatemo.com/tm-618-the-catalyst
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-*/
+/* LOAD PETS */
+async function loadPets() {
+  const snap = await getDocs(collection(db, "pets"));
+  const grid = document.getElementById("petGrid");
 
-/* ===== Mobile Nav Toggle ===== */
-const navToggle = document.getElementById('navToggle');
-const navLinks  = document.getElementById('navLinks');
+  snap.forEach(doc => {
+    const pet = doc.data();
 
-navToggle.addEventListener('click', () => {
-    navToggle.classList.toggle('active');
-    navLinks.classList.toggle('open');
-    document.body.style.overflow = navLinks.classList.contains('open') ? 'hidden' : '';
-    navToggle.setAttribute('aria-expanded',
-        navToggle.classList.contains('active'));
-});
+    const card = document.createElement("div");
+    card.className = "pet-card";
 
-navLinks.querySelectorAll('a').forEach(link => {
-    link.addEventListener('click', () => {
-        navToggle.classList.remove('active');
-        navLinks.classList.remove('open');
-        document.body.style.overflow = '';
-        navToggle.setAttribute('aria-expanded', 'false');
-    });
-});
+    card.innerHTML = `
+      <img src="${pet.imageUrl}" class="pet-img"/>
+      <h3>${pet.name}</h3>
+      <p>${pet.description}</p>
+      <strong>$${pet.price}</strong>
+    `;
 
-/* ===== Pricing Toggle ===== */
-const toggleMonthly = document.getElementById('toggleMonthly');
-const toggleYearly  = document.getElementById('toggleYearly');
-const toggleSave    = document.getElementById('toggleSave');
-const priceValues   = document.querySelectorAll('.pricing-value[data-monthly]');
-const billedTexts   = document.querySelectorAll('.pricing-billed[data-monthly]');
-
-/* ===== Payments (Backend Call) ===== */
-
-async function startCheckout(plan) {
-    try {
-        const res = await fetch("/api/create-checkout-session", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ plan })
-        });
-
-        const data = await res.json();
-
-        if (data.url) {
-            window.location.href = data.url; // Stripe redirect
-        } else {
-            alert("Could not start checkout");
-        }
-    } catch (err) {
-        console.error("Checkout error:", err);
-        alert("Payment failed. Try again.");
-    }
-}
-toggleMonthly.addEventListener('click', () => setPlan('monthly'));
-toggleYearly.addEventListener('click',  () => setPlan('yearly'));
-
-/* ===== FAQ Accordion ===== */
-function faqOpen(item) {
-    const answer = item.querySelector('.faq-answer');
-    item.classList.add('open');
-    answer.style.maxHeight = answer.scrollHeight + 'px';
-    item.querySelector('.faq-question').setAttribute('aria-expanded', 'true');
+    grid.appendChild(card);
+  });
 }
 
-function faqClose(item) {
-    const answer = item.querySelector('.faq-answer');
-    item.classList.remove('open');
-    answer.style.maxHeight = '0';
-    item.querySelector('.faq-question').setAttribute('aria-expanded', 'false');
-}
-
-document.querySelectorAll('.faq-question').forEach(btn => {
-    btn.addEventListener('click', () => {
-        const item = btn.closest('.faq-item');
-        if (item.classList.contains('open')) {
-            faqClose(item);
-        } else {
-            faqOpen(item);
-        }
-    });
-});
-
-document.getElementById('faqExpandAll').addEventListener('click', () => {
-    document.querySelectorAll('.faq-item').forEach(item => faqOpen(item));
-});
-
-document.getElementById('faqCollapseAll').addEventListener('click', () => {
-    document.querySelectorAll('.faq-item').forEach(item => faqClose(item));
-});
-
-/* ===== Scroll Reveal ===== */
-/* 3-second fallback for iframe previews where IntersectionObserver may not fire */
-const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-if (!prefersReduced) {
-    const reveals = document.querySelectorAll('.reveal');
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach((entry, i) => {
-            if (entry.isIntersecting) {
-                entry.target.style.transitionDelay = `${i * 60}ms`;
-                entry.target.classList.add('visible');
-                observer.unobserve(entry.target);
-            }
-        });
-    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
-
-    reveals.forEach(el => observer.observe(el));
-
-    /* Fallback: force all reveals visible after 3s (iframe preview) */
-    setTimeout(() => {
-        reveals.forEach(el => el.classList.add('visible'));
-    }, 3000);
-} else {
-    document.querySelectorAll('.reveal').forEach(el => el.classList.add('visible'));
-}
+window.addEventListener("load", loadPets);
