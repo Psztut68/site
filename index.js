@@ -53,7 +53,30 @@ function setPlan(plan) {
         toggleSave.classList.remove('visible');
     }
 }
+/* ===== Payments (Backend Call) ===== */
 
+async function startCheckout(plan) {
+    try {
+        const res = await fetch("/api/create-checkout-session", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ plan })
+        });
+
+        const data = await res.json();
+
+        if (data.url) {
+            window.location.href = data.url; // Stripe redirect
+        } else {
+            alert("Could not start checkout");
+        }
+    } catch (err) {
+        console.error("Checkout error:", err);
+        alert("Payment failed. Try again.");
+    }
+}
 toggleMonthly.addEventListener('click', () => setPlan('monthly'));
 toggleYearly.addEventListener('click',  () => setPlan('yearly'));
 
